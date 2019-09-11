@@ -6,9 +6,6 @@ class Card(object):
         self.color = color
         self.value = value
 
-
-
-    
 class Pack(object):
     def __init__(self):
         self.pack = []
