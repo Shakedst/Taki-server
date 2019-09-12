@@ -53,7 +53,7 @@ class Deck(Pack):
         """
         cards = []
         for _ in range(num_cards):
-            hand.append(self.pop_first())
+            cards.append(self.pop_first())
         return cards
 
 
