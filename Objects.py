@@ -1,7 +1,7 @@
 class Card(object):
     def __init__(self, color, value):
         """
-        Function that initials the card.
+        Function that initializes the card.
         """
         self.color = color
         self.value = value
@@ -12,11 +12,15 @@ class Pack(object):
     
 class Deck(Pack):
     def __init__(self):
-        pass
+        self.create_deck()
 
     def create_deck(self):
+        """
+        [summary]
+        The function initializes the deck with the cards
+        according to Taki's specific rules.
+        """
         from random import shuffle
-
         colors = ['red', 'green', 'blue', 'yellow']
         numbers = range(1,10)
         signs = ['+', '+2', 'TAKI', 'CHDIR', 'STOP']
@@ -29,6 +33,28 @@ class Deck(Pack):
                     self.pack.append(Card(color, sign))
             self.pack.append(Card('ALL', value) for value in special_cards)
         self.pack = shuffle(self.pack)
+
+    def pop_first(self):
+        """[Pops the "Upper" card of the deck]
+        
+        Returns:
+            card [Card] -- [Top of the deck]
+        """
+        return self.pack.pop(0) 
+    
+    def provide_cards(self, num_cards):
+        """[Provides a specific amout of cards from the deck]
+        
+        Arguments:
+            num_cards {[int]} -- [desired amount of cards to give]
+        
+        Returns:
+            cards [list] -- [list of cards given]
+        """
+        cards = []
+        for _ in range(num_cards):
+            hand.append(self.pop_first())
+        return cards
 
 
         
