@@ -15,6 +15,11 @@ class GameManagerSingleton(object):
         self.hands = []
         self.deck = {}
 
+    
+    def get_state(self, player = None):
+        pass
+        return
+
 
     def update_game(self, client, card):
         pass
