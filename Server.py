@@ -1,4 +1,4 @@
-import select, socket, sys, Queue, time, pickle
+import select, socket, sys, Queue, time, json
 from GameManagerClass import GameManagerSingleton
 from ServerObjects import *
 
@@ -16,6 +16,9 @@ print 'Listening on port:', server.getsockname()[1]
 inputs = [server]
 outputs = []
 message_queues = {}
+
+game_is_started = False
+player_count = 0
 
 new_users = []
 normal_users = {}
@@ -73,25 +76,30 @@ try:
                         if THE_PASSWORD in data:
                             new_users.remove(s)
                             normal_users[s] = Player(s)
-                            # Send Game STATE
-                            #message_queues[s].put(pickle.dumps(game_manager.game_state.export()))
+                            
                             message_queues[s].put('Login Successful')
+
+                            player_count += 1
+                            if player_count == 4:
+                                game_is_started = True
                         else:
                             message_queues[s].put('Wrong Password :(')
 
                     elif s in normal_users.keys():
                         # Normal communication
-                        message_queues[s].put(data) # For simple Echo
-                        game_manager.update_game(normal_users[s], data)
-                        # This function will return a dictionary (Player: state)
-                        # State includes:
-                        #   -The current player's hand
-                        #   -The other player's cards BY LENGTH
-                        #   -Who's turn is the current turn
-                        #   -What's the upper, faced up card of the pile
-                        for s, p in normal_users.items():
-                            message_queues[s] = game_manager.get_state(p)
-                        #turn = pickle.loads(data)
+                        #message_queues[s].put(data) # For simple Echo
+                        if game_is_started:
+                            game_manager.update_game(normal_users[s].id, data)
+                            # This function will return a dictionary (Player: state)
+                            # State includes:
+                            #   -The current player's hand
+                            #   -The other player's cards BY LENGTH
+                            #   -Who's turn is the current turn
+                            #   -What's the upper, faced up card of the pile
+                            for s, p in normal_users.items():
+                                message_queues[s].put(json.dumps(game_manager.get_state(p.id)))
+                        else:
+                            message_queues[s].put("Error[1]")
 
         for s in writable:
             try:
