@@ -1,3 +1,6 @@
+from random import shuffle, randint
+
+
 class Card(object):
     def __init__(self, color, value):
         """
@@ -5,6 +8,22 @@ class Card(object):
         """
         self.color = color
         self.value = value
+
+    def compare_cards(self, card):
+        """
+        Compares the card to a given card.
+        
+        Arguments:
+            card {[Card]} -- Given card
+        
+        Returns:
+            [tuple (Boolean, Boolean)] -- A tuple containing two boolean values which 
+                                          describe the comparison of both cards' colors and values.
+        """
+        if card.color == 'ALL':
+            return True, True
+        
+        return self.color == card.color, self.value == card.value
 
 class Pack(object):
     def __init__(self):
@@ -18,6 +37,28 @@ class Pack(object):
             cards {Card/List of Cards} -- the Card[s] we want to add to the pack.
         """
         self.pack.extend(cards)
+
+    def remove_cards(self, num):
+        """
+        The function removes cards by a given amount.
+        
+        Arguments:
+            num {[int]} -- [amount of cards to be removed]
+        
+        Returns:
+            [list] -- [returns a list of the removed cards from the pack]
+        """
+        return [self.pack.pop() for _ in range(num)]
+    
+    def remove_random(self):
+        """
+        The function pops a random card from the pack.
+        
+        Returns:
+            [Card] -- popped card
+        """
+        return self.pack.pop(randint(0,len(self.pack)-1))
+    
     
 class Deck(Pack):
     """
@@ -33,7 +74,6 @@ class Deck(Pack):
         The function initializes the deck with the cards
         according to Taki's specific rules.
         """
-        from random import shuffle
         colors = ['red', 'green', 'blue', 'yellow']
         numbers = range(1,10)
         signs = ['+', '+2', 'TAKI', 'CHDIR', 'STOP']
@@ -53,7 +93,7 @@ class Deck(Pack):
         Returns:
             card [Card] -- [Top of the deck]
         """
-        return self.pack.pop(-1) 
+        return self.pack.pop() 
     
     def provide_cards(self, num_cards):
         """[Provides a specific amout of cards from the deck]
@@ -76,43 +116,15 @@ class Deck(Pack):
         Returns:
             [boolean] -- True - empty ; False - not empty
         """
-        return not self.pack
-
-
-class Pile(Pack):
-    """
-    The center graveyard for cards.
-    """
-    def __init__(self):
-        pass
-    
-    def show_top(self):
-        """[Shows the "Upper" card of the deck]
-        
-        Returns:
-            [Card] -- [Top of the pile]
-        """
-        return self.pack(-1)
-    
-    def receive_cards(self, cards):
-        """
-        Receives ne cards to the top of the pile
-        
-        Arguments:
-            cards {Card / List of cards} -- The Card[s] we want to lay on the pile.
-        """
-        self.pack.add_cards(cards)
-
-
+        return not self.pack       
 
 
 class Hand(Pack):
     """
     The few cards every player holds.
     """
-    def __init__(self, deck, pile):
+    def __init__(self, deck):
         self.deck = deck
-        self.pile = pile
         self.draw_cards_from_deck(8)
     
     def draw_cards_from_deck(self, num_cards=1):
@@ -122,5 +134,5 @@ class Hand(Pack):
         Keyword Arguments:
             num_cards {int} -- How many cards we want to draw (default: {1})
         """
-        self.pack.add_cards(self.deck.provide_cards(num_cards))
+        self.add_cards(self.deck.provide_cards(num_cards))
 

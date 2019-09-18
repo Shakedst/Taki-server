@@ -82,6 +82,7 @@ try:
                             player_count += 1
                             if player_count == 4:
                                 game_is_started = True
+                                
                         else:
                             message_queues[s].put('Wrong Password :(')
 
@@ -96,8 +97,8 @@ try:
                             #   -The other player's cards BY LENGTH
                             #   -Who's turn is the current turn
                             #   -What's the upper, faced up card of the pile
-                            for s, p in normal_users.items():
-                                message_queues[s].put(json.dumps(game_manager.get_state(p.id)))
+                            for sock, p in normal_users.items():
+                                message_queues[sock].put(json.dumps(game_manager.get_state(p.id)))
                         else:
                             message_queues[s].put("Error[1]")
 

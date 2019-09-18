@@ -1,3 +1,4 @@
+from GameObjects import *
 
 class Singleton(type):
     _instances = {}
@@ -13,14 +14,41 @@ class GameManagerSingleton(object):
 
     def __init__(self):
         self.players = range(4)
-        self.hands = dict((player, []) for player in self.players)
-        self.deck = {}
+        self.deck = Deck()
+        self.hands = dict((player, None) for player in self.players)
         self.state = {
-            'pile': None,
-            'turn': None,
+            'pile': self.deck.remove_random(),
+            'turn': "",
             'others': {},
             'hand': []
         }
+
+
+    def check_card_validation(self, player_id, card):
+        cur_pile = self.state.get('pile')
+
+
+        if player_id != self.state.get('turn'):
+        # Not your turn!
+            return 'Error[69]' 
+        
+        if card not in self.hands[player_id]:
+        # Player has no such card!
+            return 'Error[2]'
+        
+        if True not in cur_pile.compare_cards(card):
+        # Color and Value not valid!
+            return 'Error[3]'
+
+            
+
+        
+
+        
+        
+        
+
+
 
     def get_state(self, player_id):
         # With a given player_id returns a dict with a game state
@@ -39,18 +67,18 @@ class GameManagerSingleton(object):
         # This function is being called every time we receive a message.
         # Each time we get a message we have to check that the player_id is the one who has to play
         # and then play the "game" for that move.
-        pass
-
+        
         # 1. play the game with the given card and the given player_id.
         # 2. update the game state.
         # 3. change the self.state dict and keep it up to date.
 
         p_state = {
-            'pile': None,
+            'pile': self.state.get('pile'),
             'turn': self.get_next_player(),
             'others': {k: len(v) for k, v in self.hands.iteritems()}
         }
 
+        
         self.state.update(p_state)
 
 
