@@ -35,7 +35,7 @@ class Deck(Pack):
         self.pack = shuffle(self.pack)
 
     def pop_first(self):
-        """[Pops the "Upper" card of the deck]
+        """[Pops the "Upper" card of the deck. This function will remove the card from the pack]
         
         Returns:
             card [Card] -- [Top of the deck]

@@ -18,7 +18,6 @@ messages = [ '1234',
 amount_expected = len(''.join(messages))
 
 try:
-
     # Send data
     for message in messages:
         print >>sys.stderr, 'sending "%s"' % message
