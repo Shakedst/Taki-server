@@ -94,9 +94,9 @@ class Pile(Pack):
         """
         return self.pack(-1)
     
-    def recive_cards(self, cards):
+    def receive_cards(self, cards):
         """
-        Recives ne cards to the top of the pile
+        Receives ne cards to the top of the pile
         
         Arguments:
             cards {Card / List of cards} -- The Card[s] we want to lay on the pile.
