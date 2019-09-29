@@ -90,17 +90,22 @@ try:
                         # Normal communication
                         #message_queues[s].put(data) # For simple Echo
                         if game_is_started:
-                            game_manager.update_game(normal_users[s].id, data)
-                            # This function will return a dictionary (Player: state)
-                            # State includes:
-                            #   -The current player's hand
-                            #   -The other player's cards BY LENGTH
-                            #   -Who's turn is the current turn
-                            #   -What's the upper, faced up card of the pile
-                            for sock, p in normal_users.items():
-                                message_queues[sock].put(json.dumps(game_manager.get_state(p.id)))
+                            # strip data to card and order
+                            data = json.loads(data)
+                            answer = game_manager.update_game(normal_users[s].id, data['card'], data['order'])
+                            if answer != 'OK':
+                                message_queues[sock].put(json.dumps(answer))
+                            else:
+                                # This function will return a dictionary (Player: state)
+                                # State includes:
+                                #   -The current player's hand
+                                #   -The other player's cards BY LENGTH
+                                #   -Who's turn is the current turn
+                                #   -What's the upper, faced up card of the pile
+                                for sock, p in normal_users.items():
+                                    message_queues[sock].put(json.dumps(game_manager.get_state(p.id)))
                         else:
-                            message_queues[s].put("Error[1]")
+                            message_queues[s].put("Error[11]")
 
         for s in writable:
             try:

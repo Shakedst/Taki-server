@@ -25,6 +25,7 @@ class Card(object):
         
         return self.color == card.color, self.value == card.value
 
+
 class Pack(object):
     def __init__(self):
         self.pack = []
@@ -57,9 +58,9 @@ class Pack(object):
         Returns:
             [Card] -- popped card
         """
-        return self.pack.pop(randint(0,len(self.pack)-1))
-    
-    
+        return self.pack.pop(randint(0, len(self.pack)-1))
+
+
 class Deck(Pack):
     """
     The center Deck of the game.
@@ -75,7 +76,7 @@ class Deck(Pack):
         according to Taki's specific rules.
         """
         colors = ['red', 'green', 'blue', 'yellow']
-        numbers = range(1,10)
+        numbers = range(1, 10)
         signs = ['+', '+2', 'TAKI', 'CHDIR', 'STOP']
         special_cards = ['TAKI', 'CHCOL']
         for _ in range(2):
@@ -108,7 +109,7 @@ class Deck(Pack):
         for _ in range(num_cards):
             cards.append(self.pop_first())
         return cards
-    
+
     def is_empty(self):
         """
         Tells if the Deck is empty
@@ -135,4 +136,3 @@ class Hand(Pack):
             num_cards {int} -- How many cards we want to draw (default: {1})
         """
         self.add_cards(self.deck.provide_cards(num_cards))
-
