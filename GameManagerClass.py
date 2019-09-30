@@ -17,7 +17,7 @@ class GameManagerSingleton(object):
     __metaclass__ = Singleton
 
     def __init__(self):
-        self.players = range(4) #IDK DO SOMETHING
+        self.players = range(4) 
         self.deck = Deck()
         self.hands = dict((player, Hand(self.deck)) for player in self.players)
         # Can be +2, and open Taki
