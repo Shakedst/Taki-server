@@ -17,7 +17,7 @@ class GameManagerSingleton(object):
     __metaclass__ = Singleton
 
     def __init__(self):
-        self.players = range(4)
+        self.players = range(4) #IDK DO SOMETHING
         self.deck = Deck()
         self.hands = dict((player, Hand(self.deck)) for player in self.players)
         # Can be +2, and open Taki
@@ -28,7 +28,7 @@ class GameManagerSingleton(object):
         self.state = {
             'pile': p_card,  # the leading card
             'turn': self.players[0],  # the id of the player who play
-            'turn_dir': self.turn_dir,
+            'turn_dir': 1,
             'pile_color': p_card.color,
             'others': {},  # the amount of cards each player holds by id
             'hand': []  # the current player hand
@@ -39,7 +39,8 @@ class GameManagerSingleton(object):
         if player_id is None or player_id not in self.hands.keys():
             return ""
 
-        return self.state.update(hand=self.hands[player_id])
+        self.state.update(hand=self.hands[player_id])
+        return self.state
 
     def get_next_player(self):
         # returns the next player from lower id number to higher or back to the lowest available
@@ -88,7 +89,7 @@ class GameManagerSingleton(object):
             self.pile_state = S_NOTHING
             return 'OK'
 
-        elif card not in self.hands[player_id]:
+        elif card not in self.hands[player_id].pack:
             # Player has no such card!
             return 'Error[02]'
         
@@ -122,13 +123,14 @@ class GameManagerSingleton(object):
         if self.pile_state != S_TAKI and card.value != '+':          
             new_turn = self.get_next_player()
 
-        self.deck.add_cards(cur_pile)
+        self.hands[player_id].remove_card(card)
+        self.deck.add_cards((cur_pile,))
 
         p_state = {
             'pile': card,
             'turn': new_turn,
-            'others': {k: len(v) for k, v in self.hands.iteritems()}
+            'others': {k: len(v.pack) for k, v in self.hands.iteritems()}
         }
-
+        
         self.state.update(p_state)
         return 'OK'

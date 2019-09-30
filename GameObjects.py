@@ -66,7 +66,8 @@ class Deck(Pack):
     The center Deck of the game.
     The one you draw cards from.
     """
-    def __init__(self):
+    def __init__(self):    
+        Pack.__init__(self)
         self.create_deck()
 
     def create_deck(self):
@@ -82,11 +83,11 @@ class Deck(Pack):
         for _ in range(2):
             for color in colors:
                 for num in numbers:
-                    self.pack.add_cards(Card(color, num))
+                    self.add_cards((Card(color, num),))
                 for sign in signs:
-                    self.pack.add_cards(Card(color, sign))
-            self.pack.add_cards(Card('ALL', value) for value in special_cards)
-        self.pack = shuffle(self.pack)
+                    self.add_cards((Card(color, sign),))
+            self.add_cards(Card('ALL', value) for value in special_cards)
+        shuffle(self.pack)
 
     def pop_first(self):
         """[Pops the "Upper" card of the deck]
@@ -125,6 +126,7 @@ class Hand(Pack):
     The few cards every player holds.
     """
     def __init__(self, deck):
+        Pack.__init__(self)
         self.deck = deck
         self.draw_cards_from_deck(8)
     
@@ -136,3 +138,10 @@ class Hand(Pack):
             num_cards {int} -- How many cards we want to draw (default: {1})
         """
         self.add_cards(self.deck.provide_cards(num_cards))
+
+    def remove_card(self, card):
+        for c in self.pack:
+            if c.value == card.value and c.color == card.color:
+                self.pack.remove(c)
+                return c
+        
