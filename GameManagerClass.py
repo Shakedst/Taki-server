@@ -19,26 +19,24 @@ class GameManagerSingleton(object):
     def __init__(self):
         self.players = range(4)
         self.deck = Deck()
-        self.hands = dict((player, self.deck.provide_cards(8)) for player in self.players)
+        self.hands = dict((player, Hand(self.deck)) for player in self.players)
         # Can be +2, and open Taki
-        self.state = S_NOTHING
+        self.pile_state = S_NOTHING
         self.plus2_counter = 0
-        self.turn_dir = 1
         p_card = self.deck.remove_random()
-        self.pile_color = p_card.color
 
         self.state = {
             'pile': p_card,  # the leading card
             'turn': self.players[0],  # the id of the player who play
             'turn_dir': self.turn_dir,
-            'pile_color': self.pile_color,
+            'pile_color': p_card.color,
             'others': {},  # the amount of cards each player holds by id
             'hand': []  # the current player hand
         }
 
     def get_state(self, player_id):
         # With a given player_id returns a dict with a game state
-        if player_id is None:
+        if player_id is None or player_id not in self.hands.keys():
             return ""
 
         return self.state.update(hand=self.hands[player_id])
@@ -49,6 +47,9 @@ class GameManagerSingleton(object):
         # MUST check if the player is still in game ( available )
         cur_turn_index = self.players.index(self.state.get('turn'))
         return self.players[(cur_turn_index + 1) % len(self.players)]
+
+    def validate_card(self, card):
+        return card.color == self.state.get('pile_color'), card.value == self.state.get('pile').value
 
     def update_game(self, player_id, card, order):
         """
@@ -65,50 +66,67 @@ class GameManagerSingleton(object):
         :param order: string stating to close taki or to draw a card or the chosen color for CHCOL
         :return: 'OK' if successful otherwise Error [##]
         """
+        cur_pile = self.state.get('pile')
         cur_turn = self.state.get('turn')
         if player_id != cur_turn:
             # Not your turn!
             return 'Error[01]'
 
         if order == 'draw card':
-            if self.state == S_NOTHING:
+            if self.pile_state == S_NOTHING:
                 # Then take one card and move the turn forward
-                pass
-            elif self.state == S_PLUS2:
+                self.hands[player_id].draw_cards_from_deck()    
+
+            elif self.pile_state == S_PLUS2:
                 # Then take two cards times the plus2_counter and move the turn forward
-                pass
-            elif self.state == S_TAKI:
+                self.hands[player_id].draw_cards_from_deck(num_cards = 2*self.plus2_counter)  
+                
+            elif self.pile_state == S_TAKI:
                 # take one and close the taki
-                pass
-            self.state = S_NOTHING
+                self.hands[player_id].draw_cards_from_deck()  
+                              
+            self.pile_state = S_NOTHING
+            return 'OK'
 
         elif card not in self.hands[player_id]:
             # Player has no such card!
             return 'Error[02]'
+        
+        if True not in self.validate_card(card):
+            # Color and Value not valid!
+            return 'Error[03]'
+
+        if self.pile_state == S_PLUS2:
+            if card.value != '+2':
+                return 'Error[03]'
 
         if card.value == 'CHDIR':
-            if card.color == self.pile_color:
-                self.players.reverse()
-                self.turn_dir *= -1
-            else:
-                # wrong color
+            self.state['turn_dir'] *= -1
+            self.players.reverse()
 
-        if card.value == 'STOP':
+        elif card.value == 'STOP':
+            self.get_next_player()
 
+        elif card.value == 'TAKI':
+            self.pile_state = S_TAKI
+                
+        elif card.value == 'CHCOL':
+            colors = ['red', 'green', 'blue', 'yellow']
+            if order in colors:
+                self.state['pile_color'] = order
+        
+        elif card.value == '+2':
+            self.pile_state = S_PLUS2
+            self.plus2_counter += 1        
+       
+        if self.pile_state != S_TAKI and card.value != '+':          
+            new_turn = self.get_next_player()
 
-        # TODO
-        # try  to put the card on the pile card
-        # if you can continue else return the corresponding error
-
-        # TODO
-        # switch beteween the card of the pile to the current turn card and return the pile to the main deck
-        # if needed change the turn to next one or leave it as it is if its a long turn (open taki => multiple cards).
-
-        # For change direction just do: self.players.revers()
+        self.deck.add_cards(cur_pile)
 
         p_state = {
-            'pile': self.pile.get_pile_card(),
-            'turn': self.get_next_player(),
+            'pile': card,
+            'turn': new_turn,
             'others': {k: len(v) for k, v in self.hands.iteritems()}
         }
 
