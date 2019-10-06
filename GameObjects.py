@@ -59,8 +59,7 @@ class Pack(object):
             [Card] -- popped card
         """
         return self.pack.pop(randint(0, len(self.pack)-1))
-
-
+        
 class Deck(Pack):
     """
     The center Deck of the game.
@@ -119,6 +118,20 @@ class Deck(Pack):
             [boolean] -- True - empty ; False - not empty
         """
         return not self.pack       
+
+    def get_opening_card(self):
+        """
+        Gets the first card in the init
+        Created because we don't want to pull out an ALL color card
+
+        Returns:
+            A Card object
+        """
+        card = self.remove_random()
+        while card.color == 'ALL':
+            self.add_cards((card,))
+            card = self.remove_random()
+        return card
 
 
 class Hand(Pack):

@@ -23,7 +23,7 @@ class GameManagerSingleton(object):
         # Can be +2, and open Taki
         self.pile_state = S_NOTHING
         self.plus2_counter = 0
-        p_card = self.deck.remove_random()
+        p_card = self.deck.get_opening_card()
 
         self.state = {
             'pile': p_card,  # the leading card
@@ -67,6 +67,8 @@ class GameManagerSingleton(object):
         :param order: string stating to close taki or to draw a card or the chosen color for CHCOL
         :return: 'OK' if successful otherwise Error [##]
         """
+        print 'ID: ',player_id,'card:',card,'order:',order
+
         cur_pile = self.state.get('pile')
         cur_turn = self.state.get('turn')
         if player_id != cur_turn:
@@ -85,9 +87,19 @@ class GameManagerSingleton(object):
             elif self.pile_state == S_TAKI:
                 # take one and close the taki
                 self.hands[player_id].draw_cards_from_deck()  
-                              
+                 
+            p_state = {
+                'turn': self.get_next_player(),
+                'others': {k: len(v.pack) for k, v in self.hands.iteritems()}
+            }
+        
+            self.state.update(p_state)
             self.pile_state = S_NOTHING
             return 'OK'
+
+        trial_state = None
+        if order == 'close taki':
+            trial_state = S_NOTHING
 
         elif card not in self.hands[player_id].pack:
             # Player has no such card!
@@ -122,6 +134,14 @@ class GameManagerSingleton(object):
        
         if self.pile_state != S_TAKI and card.value != '+':          
             new_turn = self.get_next_player()
+        else:
+            new_turn = cur_turn
+
+        if card.value != 'CHCOL':
+            self.state['pile_color'] = card.color
+
+        if trial_state != None:
+            self.pile_state = trial_state
 
         self.hands[player_id].remove_card(card)
         self.deck.add_cards((cur_pile,))
