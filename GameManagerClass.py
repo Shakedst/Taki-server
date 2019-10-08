@@ -93,6 +93,7 @@ class GameManagerSingleton(object):
                 'others': {k: len(v.pack) for k, v in self.hands.iteritems()}
             }
         
+            self.plus2_counter = 0
             self.state.update(p_state)
             self.pile_state = S_NOTHING
             return 'OK'
@@ -127,7 +128,9 @@ class GameManagerSingleton(object):
             colors = ['red', 'green', 'blue', 'yellow']
             if order in colors:
                 self.state['pile_color'] = order
-        
+            else:
+                return 'Error[04]'
+       
         elif card.value == '+2':
             self.pile_state = S_PLUS2
             self.plus2_counter += 1        
@@ -137,7 +140,7 @@ class GameManagerSingleton(object):
         else:
             new_turn = cur_turn
 
-        if card.value != 'CHCOL':
+        if card.color != 'ALL' :
             self.state['pile_color'] = card.color
 
         if trial_state != None:

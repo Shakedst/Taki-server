@@ -10,7 +10,7 @@ The ultimate taki super mega ultra combo **CYBER** server deluxe 4D MAX 16K 200I
         Error [01] - > Not Your turn
         Error [02] - > PLayer has no such card
         Error [03] - > Color / Value not valid
-        Error [04] - > 
+        Error [04] - > Invalid color order / no order with change order
         
     Socket Errors:
         Error [11] - > The Game is yet to start
