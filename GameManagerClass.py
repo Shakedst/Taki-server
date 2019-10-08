@@ -120,6 +120,7 @@ class GameManagerSingleton(object):
 
         elif card.value == 'STOP':
             self.get_next_player()
+            self.pile_state = S_NOTHING
 
         elif card.value == 'TAKI':
             self.pile_state = S_TAKI
