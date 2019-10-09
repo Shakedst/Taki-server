@@ -88,11 +88,18 @@ try:
 
                     elif s in normal_users.keys():
                         # Normal communication
-                        #message_queues[s].put(data) # For simple Echo
+                        # try this for simple echo server: message_queues[s].put(data) # For simple Echo
                         if game_is_started:
-                            # strip data to card and order
-                            data = json.loads(data)
-                            answer = game_manager.update_game(normal_users[s].id, data['card'], data['order'])
+                            try:
+                                # strip data to card and order
+                                data = json.loads(data)
+                                c_color = str(data['card']['color'])  # String
+                                c_value = str(data['card']['value'])  # String
+                                p_order = str(data['order'])  # String
+                                answer = game_manager.update_game(normal_users[s].id, c_color, c_value, p_order)
+                            except:
+                                answer = 'Error[12]'
+
                             if answer != 'OK':
                                 message_queues[sock].put(json.dumps(answer))
                             else:

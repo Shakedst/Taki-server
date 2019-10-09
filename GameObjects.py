@@ -82,7 +82,7 @@ class Deck(Pack):
         for _ in range(2):
             for color in colors:
                 for num in numbers:
-                    self.add_cards((Card(color, num),))
+                    self.add_cards((Card(color, str(num)),))
                 for sign in signs:
                     self.add_cards((Card(color, sign),))
             self.add_cards(Card('ALL', value) for value in special_cards)
