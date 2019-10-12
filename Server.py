@@ -22,11 +22,16 @@ game_is_started = False
 new_users = []
 normal_users = {}
 
-json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
+json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 2}
+
+timeout_duration = 10  # secs
+timeout_timer = timeout_duration
 
 
 def on_disconnect(s, inputs, outputs, writable, message_queues):
     inputs.remove(s)
+    game_manager.client_disconnected(normal_users[s].id)
+
     if s in outputs:
         outputs.remove(s)
 
@@ -49,6 +54,27 @@ try:
     while inputs:
         # W8S here until a message has been received.
         readable, writable, exceptional = select.select(inputs, outputs, inputs, 0)
+
+        if game_is_started:
+            if timeout_timer < time.time():
+                print "True"
+                curr_turn = game_manager.state.get('turn')
+                # Forces the player to draw a card
+                game_manager.update_game(curr_turn, "", "", "draw card")
+                # Broadcast the new state to everyone
+                for sock, p in normal_users.items():
+                    # This function will return a dictionary (Player: state)
+                    new_state = game_manager.get_state(p.id)
+                    if new_state:
+                        message_queues[sock].put(json.dumps(new_state, **json_kwargs))
+                # Reset the timer
+                timeout_timer = time.time() + timeout_duration
+
+        if game_manager.game_is_finished:
+            print 'Game Over Bye Bye'
+            for s in outputs:
+                s.send('Game Over')
+            server.close()
 
         for s in readable:
             if s is server:
@@ -89,6 +115,7 @@ try:
 
                         if Player.p_count == 4:
                             game_is_started = True
+                            timeout_timer = time.time() + timeout_duration
                             for sock, p in normal_users.items():
                                 message_queues[sock].put('Game Started, player ID ' + str(p.id))
                                 new_state = json.dumps(game_manager.get_state(p.id), **json_kwargs)
@@ -97,7 +124,6 @@ try:
                     elif s in normal_users.keys():
                         # Normal communication
                         # try this for simple echo server: message_queues[s].put(data) # For simple Echo
-                        print ("MSG FROM ", normal_users[s].id)
                         if game_is_started:
                             try:
                                 # strip data to card and order
@@ -119,6 +145,8 @@ try:
                                     new_state = game_manager.get_state(p.id)
                                     if new_state:
                                         message_queues[sock].put(json.dumps(new_state, **json_kwargs))
+
+                                timeout_timer = time.time() + timeout_duration
                         else:
                             message_queues[s].put("Error[11]")
 

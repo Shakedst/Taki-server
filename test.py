@@ -43,7 +43,7 @@ try:
         sock.send(dus)
         print dus
         print "sent"
-        time.sleep(3)
+        time.sleep(1)
 
 
 finally:

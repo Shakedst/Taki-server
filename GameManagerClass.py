@@ -17,6 +17,7 @@ class GameManagerSingleton(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.game_is_finished = False
         self.total_players = 4
         self.players = range(self.total_players)
         self.deck = Deck()
@@ -33,6 +34,7 @@ class GameManagerSingleton(object):
             'turn_dir': 1,  # the direction in which the turns go either up or down the IDs
             'pile_color': p_card.color,  # the color of the pile the same color as the pile card
             'others': [len(h.pack) for h in self.hands.values()],  # amount of cards each player holds by index
+            'players': self.players,  # the online players
             'hand': [],  # the current player hand
             'winners': [None] * self.total_players  # list that the lower the index the higher the player position
         }
@@ -47,8 +49,6 @@ class GameManagerSingleton(object):
 
     def get_next_player(self):
         # returns the next player from lower id number to higher or back to the lowest available
-        # --! IMPORTANT !-- 
-        # MUST check if the player is still in game ( available )
         cur_turn_index = self.players.index(self.state.get('turn'))
         return self.players[(cur_turn_index + 1) % len(self.players)]
 
@@ -60,9 +60,11 @@ class GameManagerSingleton(object):
         for player, hand in self.hands.iteritems():
             if not hand.pack:
                 winners[winners.index(None)] = player
-                if self.state.get('turn') == player:
-                    self.state.update(turn=self.get_next_player())
-                self.players.remove(player)
+                if len(self.players) == 2:
+                    self.client_disconnected(player)
+                    winners[winners.index(None)] = self.players[0]
+                    self.client_disconnected(self.players[0])
+                    self.game_is_finished = True
 
     def update_game(self, player_id, card_color, card_value, order):
         """
@@ -185,3 +187,11 @@ class GameManagerSingleton(object):
         self.state.update(p_state)
         self.update_winners()
         return 'OK'
+
+    def client_disconnected(self, player_id):
+        if player_id in self.players:
+            if self.state.get('turn') == player_id:
+                self.state.update(turn=self.get_next_player())
+            self.players.remove(player_id)
+            self.state['players'] = self.players
+
