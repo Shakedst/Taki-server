@@ -2,6 +2,7 @@ import socket
 import sys
 import time
 import json
+import random
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,20 +19,32 @@ message = '1234'
 
 try:
     # Send data
-    print >>sys.stderr, 'sending "%s"' % message
+    print >>sys.stderr, 'sending Password "%s"' % message
     sock.send(message)
-    time.sleep(1)
 
     data = sock.recv(1024)
-    print >> sys.stderr, 'received "%s"' % data
+    print >> sys.stderr, 'For Password "%s"' % data.strip()
 
+    data = sock.recv(1024)
+    print >> sys.stderr, 'For ID "%s"' % data.strip()
+
+    time.sleep(1)
     while True:
-        time.sleep(3)
-        play_turn = {'card': {'color': 'red', 'value': '8'}, 'order': ''}
-        sock.send(json.dumps(play_turn, **json_kwargs))
-        print "sent"
         data = sock.recv(1024)
-        print >> sys.stderr, 'received "%s"' % data
+        print >> sys.stderr, 'For game state "%s"' % data.strip()
+
+        if "Error[" not in data:
+            los = json.loads(data.strip())
+            hand = los['hand']
+            print hand
+
+        play_turn = {'card': hand[random.randint(0, len(hand) - 1)], 'order': ''}
+        dus = json.dumps(play_turn, **json_kwargs)
+        sock.send(dus)
+        print dus
+        print "sent"
+        time.sleep(3)
+
 
 finally:
     print >>sys.stderr, 'closing socket'

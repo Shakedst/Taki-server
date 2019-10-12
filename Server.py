@@ -105,29 +105,27 @@ try:
                                 c_color = str(data['card']['color'])  # String
                                 c_value = str(data['card']['value'])  # String
                                 p_order = str(data['order'])  # String
-                                answer = game_manager.update_game(normal_users[s].id, c_color, c_value, p_order)
+                                print c_color, c_value, p_order
                             except:
                                 answer = 'Error[12]'
+                            else:
+                                answer = game_manager.update_game(normal_users[s].id, c_color, c_value, p_order)
 
                             if answer != 'OK':
-                                message_queues[s].put(json.dumps(answer))
+                                message_queues[s].put(answer)
                             else:
-                                # This function will return a dictionary (Player: state)
-                                # State includes:
-                                #   -The current player's hand
-                                #   -The other player's cards BY LENGTH
-                                #   -Who's turn is the current turn
-                                #   -What's the upper, faced up card of the pile
                                 for sock, p in normal_users.items():
+                                    # This function will return a dictionary (Player: state)
                                     new_state = game_manager.get_state(p.id)
                                     if new_state:
-                                        message_queues[sock].put(json.dumps(new_state))
+                                        message_queues[sock].put(json.dumps(new_state, **json_kwargs))
                         else:
                             message_queues[s].put("Error[11]")
 
         for s in writable:
             try:
                 next_msg = message_queues[s].get_nowait()
+                next_msg = str(next_msg) + ((1024 - len(next_msg.encode('utf-8'))) * ' ')
             except Exception:
                 pass
             else:

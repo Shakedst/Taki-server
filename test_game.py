@@ -18,9 +18,8 @@ while True:
     index = int(raw_input('Enter card index: \n'))
     card = my_hand.pack[index]
     order = raw_input('Enter order: \n ').strip()
-    answer = game_manager.update_game(player_id,card,order)
+    answer = game_manager.update_game(player_id, card, order)
     print answer+'\n'
     if answer == 'OK':
         player_id = int(raw_input('Enter player id:\n'))
-    
-    
+

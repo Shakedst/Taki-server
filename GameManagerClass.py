@@ -83,19 +83,17 @@ class GameManagerSingleton(object):
             the chosen color for CHCOL card will the CHange COLor card
         :return: 'OK' if successful otherwise 'Error[##]'
         """
-        card = Card(card_color, card_value)
-
         cur_pile = self.state.get('pile')
         cur_turn = self.state.get('turn')
-
         # DEBUGGING
-        print 'ID: ', player_id, 'card:', card, 'order:', order
+        print 'ID: ', player_id, 'card:', card_color, card_value, 'order:', order
 
-        if player_id != cur_turn:
+        if player_id != self.state.get('turn'):
             # Not your turn!
             return 'Error[01]'
 
         if card_color == '' and card_value == '' and order == '':
+            # Empty Packet
             return 'Error[05]'
 
         if order == 'draw card':
@@ -125,10 +123,14 @@ class GameManagerSingleton(object):
         if order == 'close taki':
             trial_state = S_NOTHING
 
-        elif card not in self.hands[player_id].pack:
+        for c in self.hands[player_id].pack:
+            if [c.color, c.value] == [card_color, card_value]:
+                card = c
+                break
+        else:
             # Player has no such card!
             return 'Error[02]'
-        
+
         if True not in self.validate_card(card):
             # Color and Value not valid!
             return 'Error[03]'
