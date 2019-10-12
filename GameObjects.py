@@ -59,7 +59,8 @@ class Pack(object):
             [Card] -- popped card
         """
         return self.pack.pop(randint(0, len(self.pack)-1))
-        
+
+
 class Deck(Pack):
     """
     The center Deck of the game.
@@ -157,4 +158,3 @@ class Hand(Pack):
             if c.value == card.value and c.color == card.color:
                 self.pack.remove(c)
                 return c
-        

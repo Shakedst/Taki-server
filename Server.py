@@ -18,10 +18,11 @@ outputs = []
 message_queues = {}
 
 game_is_started = False
-player_count = 0
 
 new_users = []
 normal_users = {}
+
+json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
 
 
 def on_disconnect(s, inputs, outputs, writable, message_queues):
@@ -34,7 +35,7 @@ def on_disconnect(s, inputs, outputs, writable, message_queues):
 
     if s in new_users:
         new_users.remove(s)
-    
+
     if s in normal_users.keys():
         del normal_users[s]
 
@@ -69,26 +70,34 @@ try:
                         # The Client socket closed
                         print "Client Disconnected"
                         on_disconnect(s, inputs, outputs, writable, message_queues)
-
                     # So the client is online and we need to process the data
+                    # Either the client is new / registered => new_user / normal_user.
                     elif s in new_users:
                         # New Connections
-                        if THE_PASSWORD in data:
-                            new_users.remove(s)
-                            normal_users[s] = Player(s)
-                            
-                            message_queues[s].put('Login Successful')
+                        if game_is_started:
+                            message_queues[s].put('Game is undergoing')
+                            continue
 
-                            player_count += 1
-                            if player_count == 4:
-                                game_is_started = True
-                                
-                        else:
+                        if THE_PASSWORD not in data:
                             message_queues[s].put('Wrong Password :(')
+                            continue
+
+                        new_users.remove(s)
+                        normal_users[s] = Player(s)
+
+                        message_queues[s].put('Login Successful')
+
+                        if Player.p_count == 4:
+                            game_is_started = True
+                            for sock, p in normal_users.items():
+                                message_queues[sock].put('Game Started, player ID ' + str(p.id))
+                                new_state = json.dumps(game_manager.get_state(p.id), **json_kwargs)
+                                message_queues[sock].put(new_state)
 
                     elif s in normal_users.keys():
                         # Normal communication
                         # try this for simple echo server: message_queues[s].put(data) # For simple Echo
+                        print ("MSG FROM ", normal_users[s].id)
                         if game_is_started:
                             try:
                                 # strip data to card and order
@@ -101,7 +110,7 @@ try:
                                 answer = 'Error[12]'
 
                             if answer != 'OK':
-                                message_queues[sock].put(json.dumps(answer))
+                                message_queues[s].put(json.dumps(answer))
                             else:
                                 # This function will return a dictionary (Player: state)
                                 # State includes:
@@ -110,7 +119,9 @@ try:
                                 #   -Who's turn is the current turn
                                 #   -What's the upper, faced up card of the pile
                                 for sock, p in normal_users.items():
-                                    message_queues[sock].put(json.dumps(game_manager.get_state(p.id)))
+                                    new_state = game_manager.get_state(p.id)
+                                    if new_state:
+                                        message_queues[sock].put(json.dumps(new_state))
                         else:
                             message_queues[s].put("Error[11]")
 

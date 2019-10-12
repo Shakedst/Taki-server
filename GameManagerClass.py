@@ -32,17 +32,17 @@ class GameManagerSingleton(object):
             'turn': self.players[0],  # the id of the player who play
             'turn_dir': 1,  # the direction in which the turns go either up or down the IDs
             'pile_color': p_card.color,  # the color of the pile the same color as the pile card
-            'others': {},  # the amount of cards each player holds by id
+            'others': [len(h.pack) for h in self.hands.values()],  # amount of cards each player holds by index
             'hand': [],  # the current player hand
             'winners': [None] * self.total_players  # list that the lower the index the higher the player position
         }
 
     def get_state(self, player_id):
         # With a given player_id returns a dict with a game state
-        if player_id is None or player_id not in self.hands.keys():
+        if player_id not in self.players and player_id not in self.hands.keys():
             return ""
 
-        self.state.update(hand=self.hands[player_id])
+        self.state.update(hand=self.hands[player_id].pack)
         return self.state
 
     def get_next_player(self):
@@ -81,7 +81,7 @@ class GameManagerSingleton(object):
             close taki will come with last card of the taki
             draw a card will come with no card
             the chosen color for CHCOL card will the CHange COLor card
-        :return: 'OK' if successful otherwise Error [##]
+        :return: 'OK' if successful otherwise 'Error[##]'
         """
         card = Card(card_color, card_value)
 
@@ -113,7 +113,7 @@ class GameManagerSingleton(object):
                  
             p_state = {
                 'turn': self.get_next_player(),
-                'others': {k: len(v.pack) for k, v in self.hands.iteritems()}
+                'others': [len(h.pack) for h in self.hands.values()]
             }
         
             self.plus2_counter = 0
@@ -177,7 +177,7 @@ class GameManagerSingleton(object):
         p_state = {
             'pile': card,
             'turn': new_turn,
-            'others': {k: len(v.pack) for k, v in self.hands.iteritems()}
+            'others': [len(h.pack) for h in self.hands.values()]
         }
 
         self.state.update(p_state)

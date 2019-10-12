@@ -8,7 +8,7 @@ The ultimate taki super mega ultra combo **CYBER** server deluxe 4D MAX 16K 200I
 
     Game Errors:
         Error [01] - > Not Your turn
-        Error [02] - > PLayer has no such card
+        Error [02] - > Player has no such card
         Error [03] - > Color / Value not valid
         Error [04] - > Invalid color order / no order with change order
         Error [05] - > Empty Packet

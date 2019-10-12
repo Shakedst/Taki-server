@@ -1,6 +1,7 @@
 import socket
 import sys
 import time
+import json
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -11,28 +12,26 @@ print >>sys.stderr, 'connecting to %s port %s' % server_address
 sock.connect(server_address)
 
 time.sleep(1)
+json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
 
-messages = [ '1234',
-             'IM IN YAY',
-             ]
-amount_expected = len(''.join(messages))
+message = '1234'
 
 try:
     # Send data
-    for message in messages:
-        print >>sys.stderr, 'sending "%s"' % message
-        sock.sendall(message)
-        time.sleep(1.5)
+    print >>sys.stderr, 'sending "%s"' % message
+    sock.send(message)
+    time.sleep(1)
 
-    # Look for the response
-    amount_received = 0
-    
+    data = sock.recv(1024)
+    print >> sys.stderr, 'received "%s"' % data
+
     while True:
+        time.sleep(3)
+        play_turn = {'card': {'color': 'red', 'value': '8'}, 'order': ''}
+        sock.send(json.dumps(play_turn, **json_kwargs))
+        print "sent"
         data = sock.recv(1024)
-        amount_received += len(data)
-        print >>sys.stderr, 'received "%s"' % data
-        time.sleep(1.5)
-        sock.send("Hi")
+        print >> sys.stderr, 'received "%s"' % data
 
 finally:
     print >>sys.stderr, 'closing socket'
