@@ -3,6 +3,25 @@ import sys
 import time
 import json
 import random
+import re
+
+def choose_best_option(game):
+    hand = game['hand']
+    pile = game['pile']
+    pile_color = game['pile_color']
+    card_options = []
+
+    for c in hand:
+        if c['color'] == pile_color or c['value'] == pile['value']:
+            card_options.append(c)
+
+    if len(card_options) == 0:
+        return None
+    else:
+        return card_options[0]
+    
+    return None
+
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,6 +36,7 @@ json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
 
 password = '1234'
 
+
 try:
     # Send data
     # Connection setup
@@ -27,8 +47,9 @@ try:
     print >> sys.stderr, 'For Password "%s"' % data.strip()
 
     data = sock.recv(1024)
+    my_id = int(re.findall('[0-9]', data)[0])
     print >> sys.stderr, 'For ID "%s"' % data.strip()
-
+    
     # From now on each time
     time.sleep(1)
     while True:
@@ -36,18 +57,25 @@ try:
         print >> sys.stderr, 'For game state "%s"' % data.strip()
 
         if "Error[" not in data:
-            los = json.loads(data.strip())
-            hand = los['hand']
-            print hand
+            game = json.loads(data.strip())
+            cur_turn = game['turn']
 
-        play_turn = {'card': hand[random.randint(0, len(hand) - 1)], 'order': ''}
-        dus = json.dumps(play_turn, **json_kwargs)
-        sock.send(dus)
-        print dus
-        print "sent"
+            if cur_turn == my_id: 
+                card = choose_best_option(game)
+                '''
+                if card:
+                    play_turn = {'card': card, 'order': ''}
+                else:
+                '''
+                play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card' }
+                dus = json.dumps(play_turn, **json_kwargs)
+                sock.send(dus)
+                #print dus
+                #print "sent"
         time.sleep(1)
 
 
 finally:
-    print >>sys.stderr, 'closing socket'
+    print >>sys.stderr, 'cgameing socket'
     sock.close()
+

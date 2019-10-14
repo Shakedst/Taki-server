@@ -65,12 +65,13 @@ class GameManagerSingleton(object):
     def update_winners(self):
         winners = self.state.get('winners')
         for player, hand in self.hands.iteritems():
-            if not hand.pack:
+            if not hand.pack and player not in winners:
+                # return the first index in the list which is available.
                 winners[winners.index(None)] = player
-                if len(self.players) == 2:
-                    self.client_disconnected(player)
+                self.client_disconnected(player, True)
+                if len(self.players) == 1:
                     winners[winners.index(None)] = self.players[0]
-                    self.client_disconnected(self.players[0])
+                    self.client_disconnected(self.players[0], True)
                     self.game_is_finished = True
 
     def update_game(self, player_id, card_color, card_value, order):
@@ -95,7 +96,11 @@ class GameManagerSingleton(object):
         cur_pile = self.state.get('pile')
         cur_turn = self.state.get('turn')
         # DEBUGGING
-        print 'ID: ', player_id, 'card:', card_color, card_value, 'order:', order
+        #print 'ID: ', player_id, 'card:', card_color, card_value, 'order:', order
+        print 'players: ', self.state['players']
+        print 'deck length: ', len(self.deck.pack)
+        print 'winners: ', self.state['winners']
+        print 'others: ', self.state['others']
 
         if player_id != self.state.get('turn'):
             # Not your turn!
@@ -195,10 +200,15 @@ class GameManagerSingleton(object):
         self.update_winners()
         return 'OK'
 
-    def client_disconnected(self, player_id):
+    def client_disconnected(self, player_id, is_winner):
         if player_id in self.players:
+            if not is_winner:
+                w = self.state['winners']
+                index_from_the_end = len(w) - 1 - w[::-1].index(None)
+                self.state['winners'][index_from_the_end] = player_id
+
             if self.state.get('turn') == player_id:
                 self.state.update(turn=self.get_next_player())
-            self.players.remove(player_id)
-            self.state['players'] = self.players
+            #self.players.remove(player_id)
+            self.state['players'].remove(player_id)
 

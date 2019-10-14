@@ -30,7 +30,7 @@ timeout_timer = timeout_duration
 
 def on_disconnect(s, inputs, outputs, writable, message_queues):
     inputs.remove(s)
-    game_manager.client_disconnected(normal_users[s].id)
+    game_manager.client_disconnected(normal_users[s].id, False)
 
     if s in outputs:
         outputs.remove(s)
@@ -70,10 +70,11 @@ try:
                 # Reset the timer
                 timeout_timer = time.time() + timeout_duration
 
-        if game_manager.game_is_finished:
+        if game_manager.game_is_finished or len(game_manager.players) == 0:
             print 'Game Over Bye Bye'
             for s in outputs:
                 s.send('Game Over')
+            server.shutdown(socket.SHUT_RDWR)
             server.close()
 
         for s in readable:
@@ -131,7 +132,7 @@ try:
                                 c_color = str(data['card']['color'])  # String
                                 c_value = str(data['card']['value'])  # String
                                 p_order = str(data['order'])  # String
-                                print c_color, c_value, p_order
+                                #print c_color, c_value, p_order
                             except:
                                 answer = 'Error[12]'
                             else:

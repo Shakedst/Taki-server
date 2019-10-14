@@ -106,6 +106,10 @@ class Deck(Pack):
         Returns:
             cards [list] -- [list of cards given]
         """
+        if len(self.pack) <= 0:
+            #If the deck is empty, provide a new one.
+            self.create_deck()
+
         cards = []
         for _ in range(num_cards):
             cards.append(self.pop_first())
