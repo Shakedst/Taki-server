@@ -54,7 +54,7 @@ class GameManagerSingleton(object):
             return curr_turn
 
         while True:
-            curr_turn = (curr_turn + self.state['turn_dir']) % len(self.total_players)
+            curr_turn = (curr_turn + self.state['turn_dir']) % self.total_players
             if curr_turn in self.players:
                 return curr_turn
 
