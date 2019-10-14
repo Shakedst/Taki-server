@@ -16,6 +16,7 @@ The ultimate taki super mega ultra combo **CYBER** server deluxe 4D MAX 16K 200I
     Socket Errors:
         Error [11] - > The Game is yet to start
         Error [12] - > False Json packet
+        Error [13] - > Wrong password
         
     
     

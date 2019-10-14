@@ -15,12 +15,13 @@ sock.connect(server_address)
 time.sleep(1)
 json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
 
-message = '1234'
+password = '1234'
 
 try:
     # Send data
-    print >>sys.stderr, 'sending Password "%s"' % message
-    sock.send(message)
+    # Connection setup
+    print >>sys.stderr, 'sending Password "%s"' % password
+    sock.send(password)
 
     data = sock.recv(1024)
     print >> sys.stderr, 'For Password "%s"' % data.strip()
@@ -28,6 +29,7 @@ try:
     data = sock.recv(1024)
     print >> sys.stderr, 'For ID "%s"' % data.strip()
 
+    # From now on each time
     time.sleep(1)
     while True:
         data = sock.recv(1024)

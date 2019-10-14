@@ -22,7 +22,7 @@ game_is_started = False
 new_users = []
 normal_users = {}
 
-json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 2}
+json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 1}
 
 timeout_duration = 10  # secs
 timeout_timer = timeout_duration
@@ -113,7 +113,7 @@ try:
 
                         message_queues[s].put('Login Successful')
 
-                        if Player.p_count == 4:
+                        if Player.p_count == game_manager.total_players:
                             game_is_started = True
                             timeout_timer = time.time() + timeout_duration
                             for sock, p in normal_users.items():

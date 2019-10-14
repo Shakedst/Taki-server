@@ -49,8 +49,15 @@ class GameManagerSingleton(object):
 
     def get_next_player(self):
         # returns the next player from lower id number to higher or back to the lowest available
-        cur_turn_index = self.players.index(self.state.get('turn'))
-        return self.players[(cur_turn_index + 1) % len(self.players)]
+        curr_turn = self.state['turn']  # int, player id
+        if len(self.players) == 0:
+            return curr_turn
+
+        while True:
+            curr_turn = (curr_turn + self.state['turn_dir']) % len(self.total_players)
+            if curr_turn in self.players:
+                return curr_turn
+
 
     def validate_card(self, card):
         return card.color == self.state.get('pile_color'), card.value == self.state.get('pile').value
