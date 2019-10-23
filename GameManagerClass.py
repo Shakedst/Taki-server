@@ -58,7 +58,6 @@ class GameManagerSingleton(object):
             if curr_turn in self.players:
                 return curr_turn
 
-
     def validate_card(self, card):
         return card.color == self.state.get('pile_color'), card.value == self.state.get('pile').value
 
@@ -69,10 +68,7 @@ class GameManagerSingleton(object):
                 # return the first index in the list which is available.
                 winners[winners.index(None)] = player
                 self.client_disconnected(player, True)
-                if len(self.players) == 1:
-                    winners[winners.index(None)] = self.players[0]
-                    self.client_disconnected(self.players[0], True)
-                    self.game_is_finished = True
+                break
 
     def update_game(self, player_id, card_color, card_value, order):
         """
@@ -95,12 +91,13 @@ class GameManagerSingleton(object):
         """
         cur_pile = self.state.get('pile')
         cur_turn = self.state.get('turn')
+
         # DEBUGGING
-        #print 'ID: ', player_id, 'card:', card_color, card_value, 'order:', order
         print 'players: ', self.state['players']
         print 'deck length: ', len(self.deck.pack)
         print 'winners: ', self.state['winners']
         print 'others: ', self.state['others']
+        # Remove Above
 
         if player_id != self.state.get('turn'):
             # Not your turn!
@@ -200,15 +197,25 @@ class GameManagerSingleton(object):
         self.update_winners()
         return 'OK'
 
+    def last_player(self):
+        if len(self.players) == 1:
+            winners = self.state['winners']
+            winners[winners.index(None)] = self.players[0]
+            self.client_disconnected(self.players[0], True)
+            self.game_is_finished = True
+
     def client_disconnected(self, player_id, is_winner):
         if player_id in self.players:
-            if not is_winner:
-                w = self.state['winners']
-                index_from_the_end = len(w) - 1 - w[::-1].index(None)
-                self.state['winners'][index_from_the_end] = player_id
+            w = self.state['winners']
+            if player_id not in w:
+                free_index_from_the_end = len(w) - 1 - w[::-1].index(None)
+                w[free_index_from_the_end] = player_id
 
             if self.state.get('turn') == player_id:
                 self.state.update(turn=self.get_next_player())
-            #self.players.remove(player_id)
-            self.state['players'].remove(player_id)
+
+            self.players.remove(player_id)
+            del self.hands[player_id]
+            # If there is only one player left we add him to the winners, disconnect him and finish the game
+            self.last_player()
 

@@ -1,3 +1,10 @@
+"""
+This test is no longer compatible with the current game manager
+
+this test is for testing certain game mechanics
+checking if the server works according to the TAKI rules.
+"""
+
 from GameManagerClass import GameManagerSingleton
 from GameObjects import *
 

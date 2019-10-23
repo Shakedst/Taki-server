@@ -43,39 +43,36 @@ try:
     print >>sys.stderr, 'sending Password "%s"' % password
     sock.send(password)
 
-    data = sock.recv(1024)
-    print >> sys.stderr, 'For Password "%s"' % data.strip()
+    data = sock.recv(1024)[4:]
+    print >> sys.stderr, 'For Password "%s"' % data
 
-    data = sock.recv(1024)
+    data = sock.recv(1024)[4:]
     my_id = int(re.findall('[0-9]', data)[0])
-    print >> sys.stderr, 'For ID "%s"' % data.strip()
+    print >> sys.stderr, 'For ID "%s"' % data[4:]
     
     # From now on each time
     time.sleep(1)
     while True:
-        data = sock.recv(1024)
-        print >> sys.stderr, 'For game state "%s"' % data.strip()
+        data = sock.recv(1024)[4:]
+        print >> sys.stderr, 'For game state "%s"' % data
 
         if "Error[" not in data:
-            game = json.loads(data.strip())
+            game = json.loads(data)
             cur_turn = game['turn']
 
             if cur_turn == my_id: 
                 card = choose_best_option(game)
-                '''
+
                 if card:
                     play_turn = {'card': card, 'order': ''}
                 else:
-                '''
-                play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card' }
+                    play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card' }
                 dus = json.dumps(play_turn, **json_kwargs)
                 sock.send(dus)
-                #print dus
-                #print "sent"
         time.sleep(1)
 
 
 finally:
-    print >>sys.stderr, 'cgameing socket'
+    print >>sys.stderr, 'closing socket'
     sock.close()
 

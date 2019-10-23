@@ -28,9 +28,13 @@ timeout_duration = 10  # secs
 timeout_timer = timeout_duration
 
 
+def serialize(msg):
+    len_prefix = len(msg.encode('utf-8'))
+    return (str(len_prefix).zfill(4)) + msg
+
+
 def on_disconnect(s, inputs, outputs, writable, message_queues):
     inputs.remove(s)
-    game_manager.client_disconnected(normal_users[s].id, False)
 
     if s in outputs:
         outputs.remove(s)
@@ -42,10 +46,11 @@ def on_disconnect(s, inputs, outputs, writable, message_queues):
         new_users.remove(s)
 
     if s in normal_users.keys():
+        game_manager.client_disconnected(normal_users[s].id, False)
         del normal_users[s]
 
-    s.close()
     del message_queues[s]
+    s.close()
 
 
 try:
@@ -72,9 +77,11 @@ try:
 
         if game_manager.game_is_finished or len(game_manager.players) == 0:
             print 'Game Over Bye Bye'
+            print game_manager.state.get('winners')
             for s in outputs:
                 s.send('Game Over')
-            server.shutdown(socket.SHUT_RDWR)
+
+            inputs = []
             server.close()
 
         for s in readable:
@@ -88,6 +95,10 @@ try:
                 new_users.append(connection)
             else:
                 try:
+                    # Beware!
+                    # TCP Protocol is a streaming protocol therefore if ONE client spams
+                    # or sends a few messages too quickly the following line will take all the messages together
+                    # and will NOT separate them which might cause problems trying to parse it or deserialize.
                     data = s.recv(1024)
                 except socket.error:
                     print "Client Disconnected"
@@ -132,7 +143,6 @@ try:
                                 c_color = str(data['card']['color'])  # String
                                 c_value = str(data['card']['value'])  # String
                                 p_order = str(data['order'])  # String
-                                #print c_color, c_value, p_order
                             except:
                                 answer = 'Error[12]'
                             else:
@@ -154,11 +164,14 @@ try:
         for s in writable:
             try:
                 next_msg = message_queues[s].get_nowait()
-                next_msg = str(next_msg) + ((1024 - len(next_msg.encode('utf-8'))) * ' ')
-            except Exception:
+                # Quick and dirty solution next_msg = str(next_msg) + ((1024 - len(next_msg.encode('utf-8'))) * ' ')
+            except Queue.Empty:
                 pass
             else:
-                s.send(next_msg)
+                try:
+                    s.send(serialize(next_msg))
+                except socket.error as e:
+                    print 'Send Error' + str(e)
 
         for s in exceptional:
             inputs.remove(s)
@@ -170,3 +183,5 @@ try:
 except KeyboardInterrupt:
     print 'Interrupted Bye Bye'
     sys.exit(0)
+
+
