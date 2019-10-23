@@ -46,7 +46,7 @@ def on_disconnect(s, inputs, outputs, writable, message_queues):
         new_users.remove(s)
 
     if s in normal_users.keys():
-        game_manager.client_disconnected(normal_users[s].id, False)
+        game_manager.client_disconnected(normal_users[s].id)
         del normal_users[s]
 
     del message_queues[s]

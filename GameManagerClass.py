@@ -67,7 +67,7 @@ class GameManagerSingleton(object):
             if not hand.pack and player not in winners:
                 # return the first index in the list which is available.
                 winners[winners.index(None)] = player
-                self.client_disconnected(player, True)
+                self.client_disconnected(player)
                 break
 
     def update_game(self, player_id, card_color, card_value, order):
@@ -201,10 +201,10 @@ class GameManagerSingleton(object):
         if len(self.players) == 1:
             winners = self.state['winners']
             winners[winners.index(None)] = self.players[0]
-            self.client_disconnected(self.players[0], True)
+            self.client_disconnected(self.players[0])
             self.game_is_finished = True
 
-    def client_disconnected(self, player_id, is_winner):
+    def client_disconnected(self, player_id):
         if player_id in self.players:
             w = self.state['winners']
             if player_id not in w:
