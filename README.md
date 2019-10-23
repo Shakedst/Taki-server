@@ -5,9 +5,11 @@ The amazing ultimate wonderful Taki super mega ultra combo **CYBER** unlimited s
 
 ### How to run
 
-Download the project.
-open the server.py and run it.
-if you'll press enter it will run as localhost
+- Download the project.
+
+- open the server.py and run it.
+
+- if you'll press enter it will run as localhost
 
 in order to run the tests just run them they will try to connect automatically to localhost
 (so if you'd like you can change that to make it suit your own needs).
