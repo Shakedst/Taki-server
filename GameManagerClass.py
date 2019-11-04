@@ -59,7 +59,9 @@ class GameManagerSingleton(object):
                 return curr_turn
 
     def validate_card(self, card):
-        return card.color == self.state.get('pile_color'), card.value == self.state.get('pile').value
+        color_check = card.color == self.state.get('pile_color') or card.color == 'ALL'
+        value_check = card.value == self.state.get('pile').value
+        return color_check, value_check
 
     def update_winners(self):
         winners = self.state.get('winners')
