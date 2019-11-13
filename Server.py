@@ -81,7 +81,7 @@ try:
             print 'Game Over Bye Bye'
             print game_manager.state.get('winners')
             for s in outputs:
-                s.send(serialize(json.dumps('Game Over', **json_kwargs)))
+                s.send(serialize(json.dumps({'command': 'Game Over'}, **json_kwargs)))
 
             inputs = []
             server.close()
@@ -115,23 +115,23 @@ try:
                     elif s in new_users:
                         # New Connections
                         if game_is_started:
-                            message_queues[s].put('Game is undergoing')
+                            message_queues[s].put({'command': 'Game is undergoing'})
                             continue
 
                         if THE_PASSWORD not in data:
-                            message_queues[s].put('Wrong Password :(')
+                            message_queues[s].put({'command': 'Wrong Password :('})
                             continue
 
                         new_users.remove(s)
                         normal_users[s] = Player(s)
 
-                        message_queues[s].put('Login Successful')
+                        message_queues[s].put({'command': 'Login Successful'})
 
                         if Player.p_count == game_manager.total_players:
                             game_is_started = True
                             timeout_timer = time.time() + timeout_duration
                             for sock, p in normal_users.items():
-                                message_queues[sock].put('Game Started, player ID ' + str(p.id))
+                                message_queues[sock].put({'command': 'Game Started, player ID ' + str(p.id)})
                                 new_state = game_manager.get_state(p.id)
                                 message_queues[sock].put(new_state)
 
