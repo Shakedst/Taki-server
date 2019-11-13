@@ -95,7 +95,7 @@ class Deck(Pack):
         Returns:
             card [Card] -- [Top of the deck]
         """
-        return self.pack.pop() 
+        return self.pack.pop(0)
     
     def provide_cards(self, num_cards):
         """[Provides a specific amout of cards from the deck]

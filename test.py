@@ -56,8 +56,10 @@ try:
         data = sock.recv(1024)[4:]
         print >> sys.stderr, 'For game state "%s"' % data
 
-        if "Error[" not in data:
-            game = json.loads(data)
+        game_dict = json.loads(data)
+        # Check whether there is an error in the message if not then we can run our code
+        if 'error' not in game_dict:
+            game = game_dict
             cur_turn = game['turn']
 
             if cur_turn == my_id: 
@@ -66,7 +68,7 @@ try:
                 if card:
                     play_turn = {'card': card, 'order': ''}
                 else:
-                    play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card' }
+                    play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card'}
                 dus = json.dumps(play_turn, **json_kwargs)
                 sock.send(dus)
         time.sleep(1)

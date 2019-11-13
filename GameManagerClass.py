@@ -16,9 +16,9 @@ class Singleton(type):
 class GameManagerSingleton(object):
     __metaclass__ = Singleton
 
-    def __init__(self):
+    def __init__(self, _total_players):
         self.game_is_finished = False
-        self.total_players = 4
+        self.total_players = min(8, max(_total_players, 2))
         self.players = range(self.total_players)
         self.deck = Deck()
         self.hands = dict((player, Hand(self.deck)) for player in self.players)
@@ -36,7 +36,7 @@ class GameManagerSingleton(object):
             'others': [len(h.pack) for h in self.hands.values()],  # amount of cards each player holds by index
             'players': self.players,  # the online players
             'hand': [],  # the current player hand
-            'winners': [None] * self.total_players  # list that the lower the index the higher the player position
+            'winners': [None] * self.total_players,  # list that the lower the index the higher the player position
         }
 
     def get_state(self, player_id):
@@ -59,7 +59,9 @@ class GameManagerSingleton(object):
                 return curr_turn
 
     def validate_card(self, card):
-        return card.color == self.state.get('pile_color'), card.value == self.state.get('pile').value
+        color_check = card.color == self.state.get('pile_color') or card.color == 'ALL'
+        value_check = card.value == self.state.get('pile').value
+        return color_check, value_check
 
     def update_winners(self):
         winners = self.state.get('winners')
@@ -93,19 +95,22 @@ class GameManagerSingleton(object):
         cur_turn = self.state.get('turn')
 
         # DEBUGGING
+        print "--------------------------"
         print 'players: ', self.state['players']
         print 'deck length: ', len(self.deck.pack)
         print 'winners: ', self.state['winners']
         print 'others: ', self.state['others']
+        print 'pile card: ', self.state['pile'].color, self.state['pile'].value
+        print "--------------------------"
         # Remove Above
 
         if player_id != self.state.get('turn'):
             # Not your turn!
-            return 'Error[01]'
+            return {'error': '01'}
 
         if card_color == '' and card_value == '' and order == '':
             # Empty Packet
-            return 'Error[05]'
+            return {'error': '05'}
 
         if order == 'draw card':
             if self.pile_state == S_NOTHING:
@@ -128,7 +133,7 @@ class GameManagerSingleton(object):
             self.plus2_counter = 0
             self.state.update(p_state)
             self.pile_state = S_NOTHING
-            return 'OK'
+            return {'error': ''}
 
         trial_state = None
         if order == 'close taki':
@@ -140,19 +145,18 @@ class GameManagerSingleton(object):
                 break
         else:
             # Player has no such card!
-            return 'Error[02]'
+            return {'error': '02'}
 
         if True not in self.validate_card(card):
             # Color and Value not valid!
-            return 'Error[03]'
+            return {'error': '03'}
 
         if self.pile_state == S_PLUS2:
             if card.value != '+2':
-                return 'Error[03]'
+                return {'error': '03'}
 
         if card.value == 'CHDIR':
             self.state['turn_dir'] *= -1
-            self.players.reverse()
             self.pile_state = S_NOTHING
 
         elif card.value == 'STOP':
@@ -167,7 +171,7 @@ class GameManagerSingleton(object):
                 self.state['pile_color'] = order
                 self.pile_state = S_NOTHING
             else:
-                return 'Error[04]'
+                return {'error': '04'}
        
         elif card.value == '+2':
             self.pile_state = S_PLUS2
@@ -195,7 +199,7 @@ class GameManagerSingleton(object):
 
         self.state.update(p_state)
         self.update_winners()
-        return 'OK'
+        return {'error': ''}
 
     def last_player(self):
         if len(self.players) == 1:
