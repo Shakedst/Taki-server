@@ -1,2 +1,7 @@
 .idea/
-.pyc/
+.vscode/
+.vs/
+
+*~
+*.log
+*.pyc
