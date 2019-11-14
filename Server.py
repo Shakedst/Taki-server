@@ -18,7 +18,7 @@ outputs = []
 message_queues = {}
 
 game_is_started = False
-max_players = 2  # A number between 2 - 8
+max_players = 4  # A number between 2 - 8
 
 new_users = []
 normal_users = {}
@@ -79,7 +79,7 @@ try:
 
         if game_manager.game_is_finished or len(game_manager.players) == 0:
             print 'Game Over Bye Bye'
-            print game_manager.state.get('winners')
+            print 'Winners:', game_manager.state.get('winners')
             over_dict = {'command': 'Game Over', 'winners': game_manager.state.get('winners')}
             for s in outputs:
                 s.send(serialize(json.dumps(over_dict, **json_kwargs)))

@@ -100,6 +100,8 @@ try:
             print 'Card sent:',card['color'], card['value'], play_turn['order']
 
         if 'command' in game_dict and game_dict['command'] == 'Game Over':
+            print 'Game Over'
+            print 'Winners:', game_dict['winners']
             break
 
         time.sleep(1)
