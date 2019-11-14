@@ -157,12 +157,15 @@ class GameManagerSingleton(object):
             if card.value != '+2':
                 return {'error': '03'}
 
+        if self.pile_state == S_TAKI and card.color != self.state['pile_color']:
+            return {'error': '06'}
+
         if card.value == 'CHDIR':
             self.state['turn_dir'] *= -1
             self.pile_state = S_NOTHING
 
         elif card.value == 'STOP':
-            self.get_next_player()
+            self.state.update(turn = self.get_next_player())
             self.pile_state = S_NOTHING
 
         elif card.value == 'TAKI':
@@ -185,17 +188,16 @@ class GameManagerSingleton(object):
         if trial_state is not None:
             self.pile_state = trial_state
 
+        # If the card is Taki or Plus we simply don't touch the turn.
         if self.pile_state != S_TAKI and card.value != '+':
-            new_turn = self.get_next_player()
-        else:
-            new_turn = cur_turn
+            cur_turn = self.get_next_player()
 
         self.hands[player_id].remove_card(card)
         self.deck.add_cards((cur_pile,))
 
         p_state = {
             'pile': card,
-            'turn': new_turn,
+            'turn': cur_turn,
             'others': [len(h.pack) for h in self.hands.values()]
         }
 

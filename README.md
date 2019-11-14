@@ -22,6 +22,7 @@ in order to run the tests just run them they will try to connect automatically t
         Error [03] - > Color / Value not valid
         Error [04] - > Invalid color order / no order with change order
         Error [05] - > Empty Packet
+        Error [06] - > Different color used inside a taki sequence
         
     Socket Errors:
         Error [11] - > The Game is yet to start
