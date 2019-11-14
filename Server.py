@@ -19,6 +19,7 @@ message_queues = {}
 
 game_is_started = False
 max_players = 4  # A number between 2 - 8
+initial_cards_amount = 8
 
 new_users = []
 normal_users = {}
@@ -56,7 +57,7 @@ def on_disconnect(s, inputs, outputs, writable, message_queues):
 
 
 try:
-    game_manager = GameManagerSingleton(max_players)
+    game_manager = GameManagerSingleton(max_players, initial_cards_amount)
     print "Setup complete"
     while inputs:
         # W8S here until a message has been received.
@@ -64,8 +65,8 @@ try:
 
         if game_is_started:
             if timeout_timer < time.time():
-                print "True"
                 curr_turn = game_manager.state.get('turn')
+                print "Timeout, player ID", curr_turn
                 # Forces the player to draw a card
                 game_manager.update_game(curr_turn, "", "", "draw card")
                 # Broadcast the new state to everyone
@@ -136,8 +137,6 @@ try:
                                 new_state = game_manager.get_state(p.id)
                                 message_queues[sock].put(new_state.copy())
 
-
-
                     elif s in normal_users.keys():
                         # Normal communication
                         # try this for simple echo server: message_queues[s].put(data) # For simple Echo
@@ -170,7 +169,6 @@ try:
         for s in writable:
             try:
                 next_msg = message_queues[s].get_nowait()
-                # Quick and dirty solution next_msg = str(next_msg) + ((1024 - len(next_msg.encode('utf-8'))) * ' ')
             except Queue.Empty:
                 pass
             else:

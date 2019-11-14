@@ -18,12 +18,12 @@ class Singleton(type):
 class GameManagerSingleton(object):
     __metaclass__ = Singleton
 
-    def __init__(self, _total_players):
+    def __init__(self, _total_players, _initial_cards_amount):
         self.game_is_finished = False
         self.total_players = min(8, max(_total_players, 2))
         self.players = range(self.total_players)
         self.deck = Deck()
-        self.hands = dict((player, Hand(self.deck)) for player in self.players)
+        self.hands = dict((player, Hand(self.deck, _initial_cards_amount)) for player in self.players)
         # Can be +2, and open Taki
         self.pile_state = S_NOTHING
         self.plus2_counter = 0
@@ -40,11 +40,6 @@ class GameManagerSingleton(object):
             'hand': [],  # the current player hand
             'winners': [None] * self.total_players,  # list that the lower the index the higher the player position
         }
-
-        print 'Initial hands:'
-        for hand in self.hands.values():
-            hand.print_hand()
-
 
     def get_state(self, player_id):
         # With a given player_id returns a dict with a game state

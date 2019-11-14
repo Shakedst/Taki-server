@@ -143,10 +143,10 @@ class Hand(Pack):
     """
     The few cards every player holds.
     """
-    def __init__(self, deck):
+    def __init__(self, deck, cards_amount):
         Pack.__init__(self)
         self.deck = deck
-        self.draw_cards_from_deck(8)
+        self.draw_cards_from_deck(cards_amount)
     
     def draw_cards_from_deck(self, num_cards=1):
         """

@@ -5,6 +5,7 @@ import json
 import random
 import re
 
+
 def choose_best_option(game):
     hand = game['hand']
     pile = game['pile']
@@ -36,11 +37,6 @@ json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
 password = '1234'
 
 
-def print_hand(hand):
-    for card in hand.pack:
-        print '(' + card.color + ', ' + card.value + ')',
-    print
-
 try:
     # Send data
     # Connection setup
@@ -59,7 +55,7 @@ try:
     while True:
         data = sock.recv(1024)[4:]
         print >> sys.stderr, 'For game state "%s"' % data
-        #print >> sys.stderr, "msg Lengf %s" % len(data)
+
         try:
             game_dict = json.loads(data)
         except:
@@ -68,9 +64,6 @@ try:
         # Check whether there is an error in the message if not then we can run our code
         if 'error' not in game_dict and 'command' not in game_dict:
             game = game_dict
-
-            #print >> sys.stderr, 'Hand length: "%s"' % len(game['hand'])
-
             cur_turn = game['turn']
 
             if cur_turn == my_id: 
@@ -90,14 +83,13 @@ try:
                         print chosen_color
                         play_turn = {'card': card, 'order': chosen_color}
 
-
                 else:
                     play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card'}
                 dus = json.dumps(play_turn, **json_kwargs)
                 sock.send(dus)
 
         if 'error' in game_dict:
-            print 'Card sent:',card['color'], card['value'], play_turn['order']
+            print 'Card sent:', card['color'], card['value'], play_turn['order']
 
         if 'command' in game_dict and game_dict['command'] == 'Game Over':
             print 'Game Over'
