@@ -18,12 +18,12 @@ outputs = []
 message_queues = {}
 
 game_is_started = False
-max_players = 4  # A number between 2 - 8
+max_players = 2  # A number between 2 - 8
 
 new_users = []
 normal_users = {}
 
-json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 1}
+json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 0}
 
 timeout_duration = 5  # secs
 timeout_timer = timeout_duration
@@ -73,15 +73,16 @@ try:
                     # This function will return a dictionary (Player: State)
                     new_state = game_manager.get_state(p.id)
                     if new_state:
-                        message_queues[sock].put(new_state)
+                        message_queues[sock].put(new_state.copy())
                 # Reset the timer
                 timeout_timer = time.time() + timeout_duration
 
         if game_manager.game_is_finished or len(game_manager.players) == 0:
             print 'Game Over Bye Bye'
             print game_manager.state.get('winners')
+            over_dict = {'command': 'Game Over', 'winners': game_manager.state.get('winners')}
             for s in outputs:
-                s.send(serialize(json.dumps({'command': 'Game Over'}, **json_kwargs)))
+                s.send(serialize(json.dumps(over_dict, **json_kwargs)))
 
             inputs = []
             server.close()
@@ -133,7 +134,9 @@ try:
                             for sock, p in normal_users.items():
                                 message_queues[sock].put({'command': 'Game Started, player ID ' + str(p.id)})
                                 new_state = game_manager.get_state(p.id)
-                                message_queues[sock].put(new_state)
+                                message_queues[sock].put(new_state.copy())
+
+
 
                     elif s in normal_users.keys():
                         # Normal communication
@@ -158,7 +161,7 @@ try:
                                     # This function will return a dictionary (Player: state)
                                     new_state = game_manager.get_state(p.id)
                                     if new_state:
-                                        message_queues[sock].put(new_state)
+                                        message_queues[sock].put(new_state.copy())
 
                                 timeout_timer = time.time() + timeout_duration
                         else:

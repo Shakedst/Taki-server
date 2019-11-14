@@ -162,3 +162,8 @@ class Hand(Pack):
             if c.value == card.value and c.color == card.color:
                 self.pack.remove(c)
                 return c
+
+    def print_hand(self):
+        for card in self.pack:
+            print '(' + card.color + ', ' + card.value + ')',
+        print

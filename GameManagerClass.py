@@ -1,5 +1,7 @@
 from GameObjects import *
 
+import copy
+
 S_NOTHING, S_PLUS2, S_TAKI = range(3)
 
 
@@ -38,6 +40,11 @@ class GameManagerSingleton(object):
             'hand': [],  # the current player hand
             'winners': [None] * self.total_players,  # list that the lower the index the higher the player position
         }
+
+        print 'Initial hands:'
+        for hand in self.hands.values():
+            hand.print_hand()
+
 
     def get_state(self, player_id):
         # With a given player_id returns a dict with a game state

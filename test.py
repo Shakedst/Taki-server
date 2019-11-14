@@ -12,14 +12,13 @@ def choose_best_option(game):
     card_options = []
 
     for c in hand:
-        if c['color'] == pile_color or c['value'] == pile['value']:
+        if c['color'] == pile_color or c['color'] == 'ALL' or c['value'] == pile['value']:
             card_options.append(c)
 
     if len(card_options) == 0:
         return None
     else:
         return card_options[0]
-    
     return None
 
 
@@ -37,6 +36,11 @@ json_kwargs = {'default': lambda o: o.__dict__, 'sort_keys': True, 'indent': 4}
 password = '1234'
 
 
+def print_hand(hand):
+    for card in hand.pack:
+        print '(' + card.color + ', ' + card.value + ')',
+    print
+
 try:
     # Send data
     # Connection setup
@@ -48,29 +52,56 @@ try:
 
     data = sock.recv(1024)[4:]
     my_id = int(re.findall('[0-9]', data)[0])
-    print >> sys.stderr, 'For ID "%s"' % data[4:]
+    print >> sys.stderr, 'For ID "%s"' % data
     
     # From now on each time
     time.sleep(1)
     while True:
         data = sock.recv(1024)[4:]
         print >> sys.stderr, 'For game state "%s"' % data
+        #print >> sys.stderr, "msg Lengf %s" % len(data)
+        try:
+            game_dict = json.loads(data)
+        except:
+            print data
 
-        game_dict = json.loads(data)
         # Check whether there is an error in the message if not then we can run our code
-        if 'error' not in game_dict:
+        if 'error' not in game_dict and 'command' not in game_dict:
             game = game_dict
+
+            #print >> sys.stderr, 'Hand length: "%s"' % len(game['hand'])
+
             cur_turn = game['turn']
 
             if cur_turn == my_id: 
                 card = choose_best_option(game)
-
                 if card:
-                    play_turn = {'card': card, 'order': ''}
+                    if card['value'] != 'CHCOL':
+                        play_turn = {'card': card, 'order': ''}
+                    else:
+                        hand = game['hand']
+                        color_dict = {}
+                        for _card in hand:
+                            if _card['color'] in color_dict.keys():
+                                color_dict[_card['color']] += 1
+                            else:
+                                color_dict[_card['color']] = 0
+                        chosen_color = max(color_dict.keys(), key=lambda x: color_dict[x])
+                        print chosen_color
+                        play_turn = {'card': card, 'order': chosen_color}
+
+
                 else:
                     play_turn = {'card': {"color": "", "value": ""}, 'order': 'draw card'}
                 dus = json.dumps(play_turn, **json_kwargs)
                 sock.send(dus)
+
+        if 'error' in game_dict:
+            print 'Card sent:',card['color'], card['value'], play_turn['order']
+
+        if 'command' in game_dict and game_dict['command'] == 'Game Over':
+            break
+
         time.sleep(1)
 
 
