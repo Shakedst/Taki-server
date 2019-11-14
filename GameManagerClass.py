@@ -43,10 +43,14 @@ class GameManagerSingleton(object):
 
     def get_state(self, player_id):
         # With a given player_id returns a dict with a game state
-        if player_id not in self.players and player_id not in self.hands.keys():
+        #if player_id not in self.players and player_id not in self.hands.keys():
+        #    return ""
+        if player_id in self.state['winners']:
+            self.state.update(hand=[])
+        elif player_id in self.players:
+            self.state.update(hand=self.hands[player_id].pack)
+        else:
             return ""
-
-        self.state.update(hand=self.hands[player_id].pack)
         return self.state
 
     def get_next_player(self):
